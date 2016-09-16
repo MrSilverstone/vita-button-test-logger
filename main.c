@@ -7,17 +7,30 @@
 #include "debugScreen.h"
 #define printf psvDebugScreenPrintf
 
+typedef struct SceCtrlPortInfo {
+    uint8_t ports[16];
+} SceCtrlPortInfo;
+
 int main() {
 	psvDebugScreenInit();
 
-    sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+    sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
 
     SceCtrlData pad = {0}, old = {0}, none = {0};
     printf("app start. please input any button\n");
 
+    SceCtrlPortInfo info = {0};
+    sceCtrlGetControllerPortInfo(&info);
+
+    printf("Port Info: ");
+    for (int i = 0; i < 16; i++) {
+        printf("0x%02X ", info.ports[i]);
+    }
+    printf("\n");
+
     while (1) {
         memset(&pad, 0, sizeof(SceCtrlData));
-        sceCtrlPeekBufferPositive(0, &pad, 1);
+        sceCtrlPeekBufferPositiveExt(0, &pad, 1);
         pad.timeStamp = 0;
         pad.lx = 0;
         pad.ly = 0;
