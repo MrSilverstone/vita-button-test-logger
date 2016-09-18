@@ -14,9 +14,9 @@ typedef struct SceCtrlPortInfo {
 int main() {
 	psvDebugScreenInit();
 
-    sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
+    sceCtrlSetSamplingMode(2);
 
-    SceCtrlData pad = {0}, old = {0}, none = {0};
+    //SceCtrlData pad = {0}, old = {0}, none = {0};
     printf("app start. please input any button\n");
 
     SceCtrlPortInfo info = {0};
@@ -28,31 +28,43 @@ int main() {
     }
     printf("\n");
 
+    SceCtrlData pad[5] = {0}, old[5] = {0}, none = {0};
+
+#define DEADZONE(x) (x) >= 100 && (x) <= 156
     while (1) {
-        memset(&pad, 0, sizeof(SceCtrlData));
-        sceCtrlPeekBufferPositiveExt(0, &pad, 1);
-        pad.timeStamp = 0;
-        pad.lx = 0;
-        pad.ly = 0;
-        pad.rx = 0;
-        pad.ry = 0;
+        for (int port = 0; port < 1; port++) {
+            memset(&pad[port], 0, sizeof(SceCtrlData));
+            sceCtrlReadBufferPositiveExt2(port, &pad[port], 64);
+            pad[port].timeStamp = 0;
+            //if (DEADZONE(pad[port].lx)) pad[port].lx = old[port].lx;
+            //if (DEADZONE(pad[port].ly)) pad[port].ly = old[port].ly;
+            //if (DEADZONE(pad[port].rx)) pad[port].rx = old[port].rx;
+            //if (DEADZONE(pad[port].ry)) pad[port].ry = old[port].ry;
+            pad[port].lx = 0;
+            pad[port].ly = 0;
+            pad[port].rx = 0;
+            pad[port].ry = 0;
 
-        if (memcmp(&pad, &none, sizeof(SceCtrlData)) == 0) {
-            continue;
-        }
-        if (memcmp(&pad, &old, sizeof(SceCtrlData)) == 0) {
-            continue;
-        }
 
-        //printf("BTN: 0x%08X\n L: (0x%02X,0x%02X) R: (0x%02X, 0x%02X)\n",
-        //        pad.buttons, pad.lx, pad.ly, pad.rx, pad.ry);
-        printf("BTN: 0x%08X\n", pad.buttons);
-        printf("RSV: ");
-        for (int i = 0; i < 16; i++) {
-            printf("0x%02X ", pad.reserved[i]);
+            if (memcmp(&pad[port], &none, sizeof(SceCtrlData)) == 0) {
+                continue;
+            }
+            if (memcmp(&pad[port], &old[port], sizeof(SceCtrlData)) == 0) {
+                continue;
+            }
+
+            //printf("BTN: 0x%08X\n L: (0x%02X,0x%02X) R: (0x%02X, 0x%02X)\n",
+            //        pad.buttons, pad.lx, pad.ly, pad.rx, pad.ry);
+            printf("PORT: %d    ", port);
+            printf("BTN: 0x%08X    ", pad[port].buttons);
+            //printf("ANL: 0x%02X 0x%02X 0x%02X 0x%02X\n", pad[port].lx, pad[port].ly, pad[port].rx, pad[port].ry);
+            printf("RSV: ");
+            for (int i = 0; i < 16; i++) {
+                printf("0x%02X ", pad[port].reserved[i]);
+            }
+            printf("\n\n");
+            memcpy(&old[port], &pad[port], sizeof(SceCtrlData));
         }
-        printf("\n\n");
-        memcpy(&old, &pad, sizeof(SceCtrlData));
     }
 	sceKernelExitProcess(0);
 }
