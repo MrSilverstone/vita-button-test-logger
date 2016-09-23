@@ -7,10 +7,6 @@
 #include "debugScreen.h"
 #define printf psvDebugScreenPrintf
 
-typedef struct SceCtrlPortInfo {
-    uint8_t ports[16];
-} SceCtrlPortInfo;
-
 int main() {
 	psvDebugScreenInit();
 
@@ -24,8 +20,26 @@ int main() {
     sceCtrlGetControllerPortInfo(&info);
 
     printf("Port Info: ");
-    for (int i = 0; i < 16; i++) {
-        printf("0x%02X ", info.ports[i]);
+    for (int i = 0; i < 5; i++) {
+        printf("PORT%d-", i);
+        switch(info.port[i]) {
+            case SCE_CTRL_TYPE_PHY:
+                printf("VITA    ");
+                break;
+            case SCE_CTRL_TYPE_VIRT:
+                printf("PSTV    ");
+                break;
+            case SCE_CTRL_TYPE_DS3:
+                printf("DS2     ");
+                break;
+            case SCE_CTRL_TYPE_DS4:
+                printf("DS4     ");
+                break;
+            case SCE_CTRL_TYPE_UNPAIRED:
+            default:
+                printf("UNPAIR  ");
+                break;
+        }
     }
     printf("\n\n");
 
