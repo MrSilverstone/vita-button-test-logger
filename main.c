@@ -13,9 +13,6 @@ int main() {
     if (sceCtrlSetSamplingModeExt(2) < 0) {
     }
 
-    //SceCtrlData pad = {0}, old = {0}, none = {0};
-    //printf("app start. please input any button\n");
-
     SceCtrlPortInfo info = {0};
     sceCtrlGetControllerPortInfo(&info);
 
@@ -49,10 +46,7 @@ int main() {
     none.rx = 0x7f;
     none.ry = 0x7f;
 
-#define DEADZONE(x) (x) >= 100 && (x) <= 156
     while (1) {
-        //psvDebugScreenClear(0);
-
 
         for (int port = 0; port < 5; port++) {
             memset(&pad[port], 0, sizeof(SceCtrlData));
@@ -60,10 +54,6 @@ int main() {
                 continue;
             };
             pad[port].timeStamp = 0;
-            //if (DEADZONE(pad[port].lx)) pad[port].lx = old[port].lx;
-            //if (DEADZONE(pad[port].ly)) pad[port].ly = old[port].ly;
-            //if (DEADZONE(pad[port].rx)) pad[port].rx = old[port].rx;
-            //if (DEADZONE(pad[port].ry)) pad[port].ry = old[port].ry;
             if (pad[port].lx != 0xff && pad[port].lx != 0) pad[port].lx = 0x7f;
             if (pad[port].ly != 0xff && pad[port].ly != 0) pad[port].ly = 0x7f;
             if (pad[port].rx != 0xff && pad[port].rx != 0) pad[port].rx = 0x7f;
@@ -77,10 +67,7 @@ int main() {
                 continue;
             }
 
-            //printf("BTN: 0x%08X\n L: (0x%02X,0x%02X) R: (0x%02X, 0x%02X)\n",
-            //        pad.buttons, pad.lx, pad.ly, pad.rx, pad.ry);
-            //printf("PORT: %d    ", port);
-            printf("PORT: %d, BTN: 0x%08X    ", port, pad[port].buttons);
+            printf("PORT: %d    BTN: 0x%08X    ", port, pad[port].buttons);
             printf("ANL: 0x%02X 0x%02X 0x%02X 0x%02X\n", pad[port].lx, pad[port].ly, pad[port].rx, pad[port].ry);
             printf("RSV: ");
             for (int i = 0; i < 16; i++) {
