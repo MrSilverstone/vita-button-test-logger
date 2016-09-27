@@ -21,21 +21,27 @@ int main() {
         printf("PORT%d-", i);
         switch(info.port[i]) {
             case SCE_CTRL_TYPE_PHY:
-                printf("VITA    ");
+                printf("VITA");
                 break;
             case SCE_CTRL_TYPE_VIRT:
-                printf("PSTV    ");
+                printf("PSTV");
                 break;
             case SCE_CTRL_TYPE_DS3:
-                printf("DS2     ");
+                printf("DS2 ");
                 break;
             case SCE_CTRL_TYPE_DS4:
-                printf("DS4     ");
+                printf("DS4 ");
                 break;
             case SCE_CTRL_TYPE_UNPAIRED:
             default:
-                printf("UNPAIR  ");
-                break;
+                printf("UNPAIR   ");
+                continue;
+        }
+        SceUInt8 batt = 0;
+        if (sceCtrlGetBatteryInfo(i, &batt) < 0) {
+            printf("     ");
+        } else {
+            printf("(%02X) ", batt);
         }
     }
     printf("\n\n");
@@ -46,9 +52,17 @@ int main() {
     none.rx = 0x7f;
     none.ry = 0x7f;
 
+    uint8_t old_batt[5] = {0};
     while (1) {
 
         for (int port = 0; port < 5; port++) {
+            uint8_t batt;
+            if (sceCtrlGetBatteryInfo(port, &batt) >= 0) {
+                if (batt != old_batt[port]) {
+                    printf("PORT: %d Batt: %X\n", port, batt);
+                    old_batt[port] = batt;
+                }
+            }
             memset(&pad[port], 0, sizeof(SceCtrlData));
             if (sceCtrlReadBufferPositiveExt2(port, &pad[port], 64) < 0) {
                 continue;
@@ -68,10 +82,16 @@ int main() {
             }
 
             printf("PORT: %d    BTN: 0x%08X    ", port, pad[port].buttons);
-            printf("ANL: 0x%02X 0x%02X 0x%02X 0x%02X\n", pad[port].lx, pad[port].ly, pad[port].rx, pad[port].ry);
-            printf("RSV: ");
-            for (int i = 0; i < 16; i++) {
-                printf("0x%02X ", pad[port].reserved[i]);
+            printf("ANL: 0x%02X 0x%02X 0x%02X 0x%02X    ", pad[port].lx, pad[port].ly, pad[port].rx, pad[port].ry);
+            printf("LT: 0x%02X RT: 0x%02X\n", pad[port].lt, pad[port].rt);
+            printf("RSV0: ");
+            for (int i = 0; i < 4; i++) {
+                printf("0x%02X ", pad[port].reserved0[i]);
+            }
+            printf("\n");
+            printf("RSV1: ");
+            for (int i = 0; i < 10; i++) {
+                printf("0x%02X ", pad[port].reserved1[i]);
             }
             printf("\n\n");
             memcpy(&old[port], &pad[port], sizeof(SceCtrlData));
